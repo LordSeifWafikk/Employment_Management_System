@@ -11,52 +11,30 @@ public class DatabaseHandler {
 
     private static final String URL = "jdbc:sqlserver://WIN-B4JCQ04440H:1433;databaseName=EMS;integratedSecurity=true;encrypt=true;trustServerCertificate=true";
 
-    public static void main(String[] args) {
-        Connection connection = null;
-        Statement statement = null;
-        ResultSet resultSet = null;
+    // Method to establish a database connection
+    public Connection getConnection() throws SQLException, ClassNotFoundException {
+        // Step 1: Load the JDBC driver
+        Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
 
+        // Step 2: Establish a connection to the database
+        return DriverManager.getConnection(URL);
+    }
+
+    // Method to execute a query and return the result set
+    public ResultSet executeQuery(Connection connection, String query) throws SQLException {
+        Statement statement = connection.createStatement();
+        return statement.executeQuery(query);
+    }
+
+    // Method to close the database resources
+    public void closeResources(Connection connection, Statement statement, ResultSet resultSet) {
         try {
-            // Load the JDBC driver
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-
-            //  Establish a connection to the database
-            connection = DriverManager.getConnection(URL);
-            System.out.println("Connected to the database!");
-
-            //  Create a statement
-            statement = connection.createStatement();
-
-            //  Execute a query
-            String query = "SELECT * FROM Employee";
-            resultSet = statement.executeQuery(query);
-
-            //  Process the result set
-            System.out.println("Employee Data:");
-            while (resultSet.next()) {
-                int employeeID = resultSet.getInt("EmployeeID"); // Ensure this matches the column name
-                String name = resultSet.getString("Name"); // Ensure this matches the column name
-                String position = resultSet.getString("Position"); // Ensure this matches the column name
-                String department = resultSet.getString("DepartmentID"); // Ensure this matches the column name
-
-                System.out.println("ID: " + employeeID + ", Name: " + name + ", Position: " + position + ", Department: " + department);
-            }
-        } catch (ClassNotFoundException e) {
-            System.err.println("JDBC driver not found!");
-            e.printStackTrace();
+            if (resultSet != null) resultSet.close();
+            if (statement != null) statement.close();
+            if (connection != null) connection.close();
+            System.out.println("Database connection closed.");
         } catch (SQLException e) {
-            System.err.println("Error connecting to the database!");
             e.printStackTrace();
-        } finally {
-            //  Close the resources
-            try {
-                if (resultSet != null) resultSet.close();
-                if (statement != null) statement.close();
-                if (connection != null) connection.close();
-                System.out.println("Database connection closed.");
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
     }
 }
